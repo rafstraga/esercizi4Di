@@ -1,32 +1,34 @@
-public class Libro extends Prodotto implements Scontabile {
-    private String autore;
-    private boolean scontato;
+public class Main {
+    public static void main(String[] args) {
+        // Creazione dei prodotti richiesti
+        Libro libro = new Libro("Il nome della rosa", 20.0, "Umberto Eco");
+        Elettronica elettronica = new Elettronica("Cuffie wireless", 80.0, 24);
+        Alimento alimento = new Alimento("Pasta integrale", 2.5, true);
 
-    public Libro(String nome, double prezzo, String autore) {
-        super(nome, prezzo);
-        this.autore = autore;
-        this.scontato = false; // valore iniziale
-    }
+        // Inserimento in un array Prodotto[] e stampa iniziale
+        Prodotto[] prodotti = { libro, elettronica, alimento };
 
-    @Override
-    public void applicaSconto(int percentuale) {
-        if (!scontato) {
-            double nuovoPrezzo = getPrezzo() * (1 - percentuale / 100.0);
-            setPrezzo(nuovoPrezzo);
-            scontato = true;
-            System.out.println("Successo: Sconto del " + percentuale + "% applicato al libro \"" + getNome() + "\".");
-        } else {
-            System.out.println("Attenzione: Il libro \"" + getNome() + "\" è già stato scontato in precedenza!");
+        System.out.println("=== CATALOGO INIZIALE ===");
+        for (Prodotto p : prodotti) {
+            System.out.println(p.descrizione());
         }
-    }
 
-    @Override
-    public boolean isScontato() {
-        return scontato;
-    }
+        // Creazione array Scontabile[] con libro ed elettronica e applicazione sconto 10%
+        Scontabile[] scontabili = { libro, elettronica };
+        
+        System.out.println("\n=== APPLICAZIONE SALDI (10%) ===");
+        for (Scontabile s : scontabili) {
+            s.applicaSconto(10);
+        }
 
-    @Override
-    public String descrizione() {
-        return "Libro: " + super.descrizione() + ", autore " + autore;
+        // Tentativo di applicare un secondo sconto al libro
+        System.out.println("\n=== SECONDO TENTATIVO DI SCONTO SUL LIBRO ===");
+        libro.applicaSconto(10);
+
+        // Ristampa di tutti i prodotti per verificare i nuovi prezzi
+        System.out.println("\n=== CATALOGO AGGIORNATO DOPO I SALDI ===");
+        for (Prodotto p : prodotti) {
+            System.out.println(p.descrizione());
+        }
     }
 }
