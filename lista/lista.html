@@ -1,0 +1,256 @@
+<html>
+<head>
+
+<style>
+#elenco{
+    width:100%;
+    border-collapse:collapse;
+}
+
+#elenco td{
+    padding:5px;
+    vertical-align:top;
+}
+</style>
+
+<script language="JavaScript">
+
+
+var Ordini = new Array();
+
+function Ordine(myProdotto, myPrezzoUnitario, myQuantita)
+{
+    this.Prodotto = myProdotto;
+    this.PrezzoUnitario = myPrezzoUnitario;
+    this.Quantita = myQuantita;
+}
+
+function CaricaDati()
+{
+    Ordini[0] = new Ordine("Panino al prosciutto", 2, 0);
+    Ordini[1] = new Ordine("Panino al salame", 2, 0);
+    Ordini[2] = new Ordine("Panino al tonno", 3, 0);
+    Ordini[3] = new Ordine("Cornetto pan di stelle", 1.2, 0);
+    Ordini[4] = new Ordine("Cornetto marmellata", 1.0, 0);
+    Ordini[5] = new Ordine("Panino con pollo", 3.5, 0);
+}
+
+function ScriviTabella()
+{
+    var Tabella = document.getElementById("elenco");
+
+    while (Tabella.rows.length > 1)
+    {
+        Tabella.deleteRow(1);
+    }
+
+    for (var i = 0; i < Ordini.length; i++)
+    {
+        var riga = Tabella.insertRow();
+
+       var cell1 = riga.insertCell(0);
+        var cell2 = riga.insertCell(1);
+        var cell3 = riga.insertCell(2);
+        var cell4 = riga.insertCell(3);
+        var cell5 = riga.insertCell(4);
+        var cell6 = riga.insertCell(5);
+        var cell7 = riga.insertCell(6);
+
+        cell1.innerHTML = Ordini[i].Prodotto;
+        cell2.innerHTML = Ordini[i].PrezzoUnitario;
+
+       cell3.innerHTML =
+        "<input type='number' min='0' id='qta_" + i +
+        "' value='0' oninput='AggiornaQuantita(" + i + ")'>";
+
+
+        cell4.innerHTML =
+        "<input type='number' id='importo_" + i +
+        "' value='0.00' readonly>";
+
+        
+        cell5.innerHTML =
+
+        "<details>" +
+
+        "<summary>Varianti</summary>" +
+
+        "<input type='checkbox' id='tonnata_" + i +
+        "' oninput='AggiornaQuantita(" + i + ")'> Salsa tonnata (+0,50)<br>" +
+
+        "<input type='checkbox' id='maionese_" + i +
+        "' oninput='AggiornaQuantita(" + i + ")'> Maionese (+0,50)<br>" +
+
+        "<input type='checkbox' id='ketchup_" + i +
+        "' oninput='AggiornaQuantita(" + i + ")'> Ketchup (+0,50)<br>" +
+
+        "<input type='checkbox' id='piastrato_" + i +
+        "' oninput='AggiornaQuantita(" + i + ")'> Piastrato (+0,50)" +
+
+        "</details>";
+
+        cell6.innerHTML =
+        "<input type='text' id='note_" + i + "'>";
+
+        cell7.innerHTML =
+        "<input type='number' id='totale_" + i +
+        "' value='0.00' readonly>";
+    }
+
+    var rigaTotale = Tabella.insertRow();
+
+    rigaTotale.insertCell(0).innerHTML = "";
+    rigaTotale.insertCell(1).innerHTML = "";
+    rigaTotale.insertCell(2).innerHTML =
+    "<b>TOTALE COMPLESSIVO</b>";
+    rigaTotale.insertCell(3).innerHTML =
+    "<b><span id='totaleGenerale'>" +
+    CalcolaTotale() +
+    "</span> €</b>";
+    rigaTotale.insertCell(4).innerHTML = "";
+}
+
+function Inizializza()
+{
+    CaricaDati();
+    ScriviTabella();
+}
+
+function AggiornaQuantita(iRigo)
+{
+    var qta = document.getElementById("qta_" + iRigo).value;
+
+    if (qta < 0)
+    {
+        qta = 0;
+        document.getElementById("qta_" + iRigo).value = 0;
+    }
+
+    var importo = qta * Ordini[iRigo].PrezzoUnitario;
+
+    document.getElementById("totale_" + iRigo).value =
+    importo.toFixed(2);
+
+    Ordini[iRigo].Quantita = qta;
+
+    document.getElementById("totaleGenerale").innerHTML =
+    CalcolaTotale();
+
+    var extra = 0;
+
+    if(document.getElementById("tonnata_" + iRigo).checked)
+    extra += 0.50;
+
+    if(document.getElementById("maionese_" + iRigo).checked)
+    extra += 0.50;
+
+    if(document.getElementById("ketchup_" + iRigo).checked)
+    extra += 0.50;
+
+    if(document.getElementById("piastrato_" + iRigo).checked)
+    extra += 0.50;
+
+    var totale = importo + (extra * qta);
+
+    document.getElementById("totale_" + iRigo).value =
+    totale.toFixed(2);
+}
+
+function StampaLista()
+{
+    var testo = "ELENCO ORDINI\n\n";
+
+    for(var i = 0; i < Ordini.length; i++)
+    {
+        var qta = document.getElementById("qta_" + i).value;
+        var totale = document.getElementById("totale_" + i).value;
+        var note = document.getElementById("note_" + i).value;
+
+        testo += "Prodotto: " + Ordini[i].Prodotto + "\n";
+        testo += "Prezzo: " + Ordini[i].PrezzoUnitario + " €\n";
+        testo += "Quantita: " + qta + "\n";
+        testo += "Totale: " + totale + " €\n";
+        testo += "Note: " + note + "\n";
+        testo += "---------------------------\n";
+    }
+
+    testo += "\nTOTALE COMPLESSIVO: " + CalcolaTotale() + " €";
+
+    var blob = new Blob([testo], {type: "text/plain"});
+    var link = document.createElement("a");
+
+    link.href = URL.createObjectURL(blob);
+    link.download = "ElencoOrdini.txt";
+
+    link.click();
+}
+
+
+
+function CalcolaTotale()
+{
+    var totale = 0;
+
+    for (var i = 0; i < Ordini.length; i++)
+    {
+        totale += Ordini[i].Quantita *
+                  Ordini[i].PrezzoUnitario;
+    }
+
+    return totale.toFixed(2);
+}
+
+function AggiungiProdotto()
+{
+    var lista = document.getElementById("nuovoProdotto");
+
+    var nome =
+    lista.options[lista.selectedIndex].text;
+
+    var prezzo =
+    parseFloat(lista.value);
+
+    Ordini.push(new Ordine(nome, prezzo, 0));
+
+    ScriviTabella();
+}
+
+</script>
+</head>
+
+<body onload="Inizializza()">
+
+<table border="1" id="elenco">
+<tr>
+    <td>PRODOTTO</td>
+    <td>PREZZO</td>
+    <td>QUANTITA'</td>
+    <td>IMPORTO</td>
+    <td>VARIANTE</td>
+    <td>NOTE</td>
+    <td>TOTALE</td>
+</tr>
+</table>
+
+<br><br>
+
+<input type="button"
+       value="Stampa Lista"
+       onclick="StampaLista()">
+
+<br><br>
+
+<select id="nuovoProdotto">
+    <option value="1">Acqua</option>
+    <option value="1.5">Coca Cola</option>
+    <option value="1.5">Fanta</option>
+    <option value="2">Patatine</option>
+    <option value="2.5">Succo alla pesca</option>
+</select>
+
+<input type="button"
+       value="Aggiungi alla lista"
+       onclick="AggiungiProdotto()">
+
+</body>
+</html>
